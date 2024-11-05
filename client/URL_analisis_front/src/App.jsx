@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import PieChartComponent from './components/PieChartComponent';
+import BarChartComponent from './components/BarChartComponent';
 
 function AnalizarURLs() {
   const [url, setUrl] = useState('');
@@ -19,7 +21,6 @@ function AnalizarURLs() {
       const data = await response.json();
       console.log(data)
       setUrlAnalysisResult(data); // Guarda el resultado del análisis
-      alert(data);
     } catch (error) {
       console.error('Error al analizar la URL:', error);
     }
@@ -57,53 +58,57 @@ function AnalizarURLs() {
       });
       const data = await response.json();
       setCsvAnalysisResult(data); // Guarda el resultado del análisis
-      alert(data);
     } catch (error) {
       console.error('Error al analizar el CSV:', error);
     }
   };
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h1>Analizador de URLs</h1>
+    <div className='bg-gray-900 text-white p-10 min-h-screen'>
+    <h1 className='text-center text-3xl'>Analizador de URLs</h1>
+    <div className= 'h-fit justify-center items-center mt-20 space-y-20'>
+        {/* Formulario para analizar una URL individual */}
+        <div className='bg-gray-800 text-center space-y-4  p-10 rounded-xl w-7/12 mx-auto '>
+          <h2 className='text-xl'>Análisis de una URL individual</h2>
+          <input
+            type="text"
+            placeholder="Introduce la URL"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            className='block w-1/2 mx-auto p-2 bg-gray-900'
+          />
+          <button onClick={analizarURL} className='block w-1/3 mx-auto p-2 bg-gray-700 rounded'>Analizar URL</button>
+          {urlAnalysisResult && (
+            <div style={{ marginTop: '10px' }}>
+              {urlAnalysisResult[0] === 1 ? (
+                <strong>Resultado del análisis: Posible URL de phishing</strong>
+              ) : (
+                <strong>Resultado del análisis: URL segura</strong>
+              )}
+            </div>
+          )}
+        </div>
 
-      {/* Formulario para analizar una URL individual */}
-      <div style={{ marginBottom: '20px' }}>
-        <h2>Análisis de una URL individual</h2>
-        <input
-          type="text"
-          placeholder="Introduce la URL"
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          style={{ marginRight: '10px' }}
-        />
-        <button onClick={analizarURL}>Analizar URL</button>
-        {urlAnalysisResult && (
-          <div style={{ marginTop: '10px' }}>
-            <strong>Resultado del análisis:</strong> {JSON.stringify(urlAnalysisResult)}
-          </div>
-        )}
-      </div>
-
-      {/* Formulario para analizar un archivo CSV */}
-      <div style={{ marginBottom: '20px' }}>
-        <h2>Análisis de un archivo CSV</h2>
-        <input
-          type="file"
-          accept=".csv"
-          onChange={(e) => setFile(e.target.files[0])}
-          style={{ marginRight: '10px' }}
-        />
-        <button onClick={analizarCSV}>Analizar CSV</button>
-        {csvAnalysisResult && (
-          <div style={{ marginTop: '10px' }}>
-            <strong>Resultado del análisis:</strong> {JSON.stringify(csvAnalysisResult)}
-          </div>
-        )}
-      </div>
-      <div style={{ textAlign: 'center', marginTop: '20px' }}>
-        <button onClick={fetchMessage}>Mostrar mensaje</button>
-        {message && <p>{message}</p>}
+        {/* Formulario para analizar un archivo CSV */}
+        <div className='bg-gray-800 text-center space-y-4 p-10 rounded-xl w-7/12 mx-auto '>
+          <h2 className='text-xl'>Análisis de un archivo CSV</h2>
+          <input
+            type="file"
+            accept=".csv"
+            onChange={(e) => setFile(e.target.files[0])}
+            className='block w-5/12 mx-auto p-2 bg-gray-900'
+          />
+          <button onClick={analizarCSV} className='block w-1/3 mx-auto p-2 bg-gray-700 rounded'>Analizar CSV</button>
+          {csvAnalysisResult && (
+            <div className='mt-20 space-y-10'>
+              <strong>Tienes {csvAnalysisResult[0]} posibles URLs de phishing</strong>
+              <div className='flex'>
+                <PieChartComponent positive={csvAnalysisResult[0]} negative={csvAnalysisResult[1]} />
+                <BarChartComponent positive={csvAnalysisResult[0]} negative={csvAnalysisResult[1]} />
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

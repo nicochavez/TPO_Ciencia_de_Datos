@@ -68,7 +68,7 @@ def similarityRate(urlPH):
 def blackListCheck(urlPH):
     blackList = pd.read_csv('./datasets/PhishTank-DataSet.csv')
     blackList = pd.DataFrame(blackList)
-    blackList = topWEBData.url
+    blackList = blackList.url
     banned = False
 
     if urlPH in blackList.to_numpy()
@@ -76,8 +76,40 @@ def blackListCheck(urlPH):
 
     return banned
 
+def complementaryPrediction(urlPH, prediction):
+
+    finalPrediction = 0
+
+    similar = similarityRate(urlPH)
+
+    banned = blackListCheck(urlPH)
+    
+    if similar != "" or banned or prediction = 1:
+        finalPrediction = 1
+
+    return finalPrediction
+
+
+def groupBlackListCheck(dfURL):
+    blackList = pd.read_csv('./datasets/PhishTank-DataSet.csv')
+    blackList = pd.DataFrame(blackList)
+    blackList = blackList.url
+    blackList["prediction"] = 1
+    banned = False
+
+    dfPred = dfURL.join(blackList, 'url', 'url')
+    dfPred.fillna(value=0, inplace=True)
+
+    return dfPred
+
 
     
+
+
+
+
+
+
 
     
     

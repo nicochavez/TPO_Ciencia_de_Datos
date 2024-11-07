@@ -26,28 +26,29 @@ def get_MLNB():
     return MLNB
     
 
-def valueCalc(df):
-  df['url_length'] = df['url'].str.len()
-  df['n_dots'] = df['url'].str.count('\.')
-  df['n_hypens'] = df['url'].str.count('-')
-  df['n_underline'] = df['url'].str.count('_')
-  df['n_slash'] = df['url'].str.count('/')
-  df['n_questionmark'] = df['url'].str.count('\?')
-  df['n_equal'] = df['url'].str.count('=')
-  df['n_at'] = df['url'].str.count('@')
-  df['n_and'] = df['url'].str.count('&')
-  df['n_exclamation'] = df['url'].str.count('!')
-  df['n_space'] = df['url'].str.count(' ')
-  df['n_tilde'] = df['url'].str.count('~')
-  df['n_comma'] = df['url'].str.count(',')
-  df['n_plus'] =  df['url'].str.count('\+')
-  df['n_asterisk'] = df['url'].str.count('\*')
-  df['n_hastag'] = df['url'].str.count('#')
-  df['n_dollar'] = df['url'].str.count('\$')
-  df['n_percent'] = df['url'].str.count('%')
-  df['n_hastag'] = df['url'].str.count('#')
 
-  return(df)
+def valueCalc(df):
+    df['url_length'] = df['url'].str.len()
+    df['n_dots'] = df['url'].str.count(r'\.')
+    df['n_hypens'] = df['url'].str.count(r'-')
+    df['n_underline'] = df['url'].str.count(r'_')
+    df['n_slash'] = df['url'].str.count(r'/')
+    df['n_questionmark'] = df['url'].str.count(r'\?')
+    df['n_equal'] = df['url'].str.count(r'=')
+    df['n_at'] = df['url'].str.count(r'@')
+    df['n_and'] = df['url'].str.count(r'&')
+    df['n_exclamation'] = df['url'].str.count(r'!')
+    df['n_space'] = df['url'].str.count(r' ')
+    df['n_tilde'] = df['url'].str.count(r'~')
+    df['n_comma'] = df['url'].str.count(r',')
+    df['n_plus'] = df['url'].str.count(r'\+')
+    df['n_asterisk'] = df['url'].str.count(r'\*')
+    df['n_hastag'] = df['url'].str.count(r'#')
+    df['n_dollar'] = df['url'].str.count(r'\$')
+    df['n_percent'] = df['url'].str.count(r'%')
+    
+    return df
+
 
 def similarityRate(urlPH):
 
@@ -71,7 +72,7 @@ def blackListCheck(urlPH):
     blackList = blackList.url
     banned = False
 
-    if urlPH in blackList.to_numpy()
+    if urlPH in blackList.to_numpy():
         banned = True
 
     return banned
@@ -83,8 +84,10 @@ def complementaryPrediction(urlPH, prediction):
     similar = similarityRate(urlPH)
 
     banned = blackListCheck(urlPH)
+
+    print(similar)
     
-    if similar != "" or banned or prediction = 1:
+    if similar != "" or banned or prediction == 1:
         finalPrediction = 1
 
     return finalPrediction

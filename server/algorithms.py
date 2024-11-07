@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from sklearn.naive_bayes import MultinomialNB
+import difflib
 
 def get_MLNB():
     data_set = pd.read_csv('./datasets/DataSet_WebPhishing_Final.csv')
@@ -23,7 +24,7 @@ def get_MLNB():
     MLNB.fit(X, y)
 
     return MLNB
-
+    
 
 def valueCalc(df):
   df['url_length'] = df['url'].str.len()
@@ -47,3 +48,68 @@ def valueCalc(df):
   df['n_hastag'] = df['url'].str.count('#')
 
   return(df)
+
+def similarityRate(urlPH):
+
+    topWEBData = pd.read_csv('./datasets/TOP_Ranked_Websites_DataSet.csv')
+    topWEBData = pd.DataFrame(topWEBData)
+    topWEBData = topWEBData.Domain
+    match = False
+    similarSite = ""
+    
+    for site in topWEBData:
+        if difflib.SequenceMatcher(None, site, urlPH).ratio() > 0.6:
+            match = True
+            similarSite = site
+            break
+            
+    return similarSite
+
+def blackListCheck(urlPH):
+    blackList = pd.read_csv('./datasets/PhishTank-DataSet.csv')
+    blackList = pd.DataFrame(blackList)
+    blackList = blackList.url
+    banned = False
+
+    if urlPH in blackList.to_numpy()
+        banned = True
+
+    return banned
+
+def complementaryPrediction(urlPH, prediction):
+
+    finalPrediction = 0
+
+    similar = similarityRate(urlPH)
+
+    banned = blackListCheck(urlPH)
+    
+    if similar != "" or banned or prediction = 1:
+        finalPrediction = 1
+
+    return finalPrediction
+
+
+def groupBlackListCheck(dfURL):
+    blackList = pd.read_csv('./datasets/PhishTank-DataSet.csv')
+    blackList = pd.DataFrame(blackList)
+    blackList = blackList.url
+    blackList["prediction"] = 1
+    banned = False
+
+    dfPred = dfURL.join(blackList, 'url', 'url')
+    dfPred.fillna(value=0, inplace=True)
+
+    return dfPred
+
+
+    
+
+
+
+
+
+
+
+    
+    

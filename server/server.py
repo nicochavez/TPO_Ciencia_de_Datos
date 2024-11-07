@@ -41,8 +41,11 @@ def predict_LonelyURL():
         # Hacer la predicción con el modelo cargado
         prediction = MLNB.predict(urlDF)
 
+        finalPrediction = complementaryPrediction(URL, prediction[0])
+
         # Devolver la predicción como respuesta JSON
-        return jsonify(prediction=int(prediction[0]))
+        #return jsonify(prediction=int(prediction[0]))
+        return jsonify(finalPrediction)
     
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -75,8 +78,12 @@ def predict_GroupURL():
         # Realizar la predicción
         prediction = MLNB.predict(df_urlPredict)
 
+        finalDF = csvDF[['url']]
+        finalDF['prediction'] = prediction
+        finalDF['finalPrediction'] = complementaryPrediction(finalDF['url'], finalDF['prediction'])       
+
         # Contar las predicciones y crear el resultado
-        prediction_counts = pd.Series(prediction).value_counts().to_dict()
+        prediction_counts = pd.Series(finalDF['finalPrediction']).value_counts().to_dict()
 
         return jsonify(prediction_counts)
     except Exception as e:

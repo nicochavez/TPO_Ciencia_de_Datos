@@ -79,14 +79,35 @@ function AnalizarURLs() {
           />
           <button onClick={analizarURL} className='block w-1/3 mx-auto p-2 bg-gray-700 rounded'>Analizar URL</button>
           {urlAnalysisResult && (
-            <div style={{ marginTop: '10px' }}>
-              {urlAnalysisResult[0] === 1 ? (
-                <strong>Resultado del análisis: Posible URL de phishing</strong>
-              ) : (
-                <strong>Resultado del análisis: URL segura</strong>
-              )}
-            </div>
-          )}
+          <div className='flex justify-center'>
+            {(() => {
+              if (urlAnalysisResult[0] === 1) {
+                return (
+                  <div className='flex'>
+                    <p className='font-bold'>Resultado del análisis:</p>
+                    <p className='bg-red-600'>Posible URL de phishing</p>
+                  </div>
+                );
+              } else if (urlAnalysisResult[0] === -1) {
+                return (
+                  <div className='flex'>
+                    <p className='font-bold'>Resultado del análisis:</p>
+                    <p className='bg-yellow-600'>URL no Valida</p>
+                  </div>
+                );
+              } else {
+                return (
+                  <div className='flex'>
+                    <p className='font-bold'>Resultado del análisis:</p>
+                    <p className='bg-green-600'>URL segura</p>
+                  </div>
+                );
+              }
+            })()}
+          </div>
+        )}
+
+
         </div>
 
         {/* Formulario para analizar un archivo CSV */}

@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 import pandas as pd
 from algorithms import valueCalc, get_MLNB
+import validators
 
 app = Flask(__name__)
 CORS(app)  # Habilitar CORS para todas las rutas
@@ -18,8 +19,9 @@ def predict_LonelyURL():
         print(data)
         URL = data.get('url')
 
-        if not URL:
-            return jsonify({"error": "No URL provided"}), 400
+        if not URL or not validators.url(URL):
+            print("URL no válida")
+            return jsonify([-1]), 400
 
         data = request.get_json()
         URL = data.get("url")  # Asegurarse de recibir la URL en el body de la petición POST

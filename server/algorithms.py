@@ -65,5 +65,19 @@ def similarityRate(urlPH):
             
     return similarSite
 
+def blackListCheck(urlPH):
+    blackList = pd.read_csv('./datasets/PhishTank-DataSet.csv')
+    blackList = pd.DataFrame(blackList)
+    blackList = topWEBData.url
+    banned = False
+
+    if urlPH in blackList.to_numpy()
+        banned = True
+
+    return banned
+
+
+    
+
     
     

@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from sklearn.naive_bayes import MultinomialNB
+import difflib
 
 def get_MLNB():
     data_set = pd.read_csv('./datasets/DataSet_WebPhishing_Final.csv')
@@ -23,7 +24,7 @@ def get_MLNB():
     MLNB.fit(X, y)
 
     return MLNB
-
+    
 
 def valueCalc(df):
   df['url_length'] = df['url'].str.len()
@@ -47,3 +48,22 @@ def valueCalc(df):
   df['n_hastag'] = df['url'].str.count('#')
 
   return(df)
+
+def similarityRate(urlPH):
+
+    topWEBData = pd.read_csv('./datasets/TOP_Ranked_Websites_DataSet.csv')
+    topWEBData = pd.DataFrame(topWEBData)
+    topWEBData = topWEBData.Domain
+    match = False
+    similarSite = ""
+    
+    for site in topWEBData:
+        if difflib.SequenceMatcher(None, site, urlPH).ratio() > 0.6:
+            match = True
+            similarSite = site
+            break
+            
+    return similarSite
+
+    
+    

@@ -57,6 +57,7 @@ function AnalizarURLs() {
         body: formData,
       });
       const data = await response.json();
+      console.log(data)
       setCsvAnalysisResult(data); // Guarda el resultado del análisis
     } catch (error) {
       console.error('Error al analizar el CSV:', error);
@@ -81,14 +82,14 @@ function AnalizarURLs() {
           {urlAnalysisResult && (
           <div className='flex justify-center'>
             {(() => {
-              if (urlAnalysisResult[0] === 1) {
+              if (urlAnalysisResult === 1) {
                 return (
                   <div className='flex'>
                     <p className='font-bold'>Resultado del análisis:</p>
                     <p className='bg-red-600'>Posible URL de phishing</p>
                   </div>
                 );
-              } else if (urlAnalysisResult[0] === -1) {
+              } else if (urlAnalysisResult === -1) {
                 return (
                   <div className='flex'>
                     <p className='font-bold'>Resultado del análisis:</p>

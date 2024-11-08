@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from sklearn.naive_bayes import MultinomialNB
 import difflib
+import tldextract
 
 def get_MLNB():
     data_set = pd.read_csv('./datasets/DataSet_WebPhishing_Final.csv')
@@ -52,24 +53,26 @@ def valueCalc(df):
 
 def similarityRate(urlPH):
 
-    topWEBData = pd.read_csv('./datasets/TOP_Ranked_Websites_DataSet.csv')
-    topWEBData = pd.DataFrame(topWEBData)
-    topWEBData = topWEBData.Domain
+    topWEBData = pd.read_csv('./datasets/top_websites.csv', delimiter=';')
+
+
+    topWEBData = topWEBData['Domain']  # Asegúrate de que 'Domain' es el nombre correcto de la columna.
     match = False
     similarSite = ""
     
     for site in topWEBData:
-        if difflib.SequenceMatcher(None, site, urlPH).ratio() > 0.6:
+        if difflib.SequenceMatcher(None, site, urlPH).ratio() > 0.8 or difflib.SequenceMatcher(None, site, urlPH).ratio() < 0.9:
             match = True
             similarSite = site
             break
-            
+
+    
     return similarSite
 
 def blackListCheck(urlPH):
     blackList = pd.read_csv('./datasets/PhishTank-DataSet.csv')
     blackList = pd.DataFrame(blackList)
-    blackList = blackList.url
+    blackList = blackList['url']
     banned = False
 
     if urlPH in blackList.to_numpy():
@@ -77,17 +80,21 @@ def blackListCheck(urlPH):
 
     return banned
 
+def get_domain(url):
+    ext = tldextract.extract(url)
+    return f"{ext.domain}.{ext.suffix}"
+
 def complementaryPrediction(urlPH, prediction):
+    url_domain = get_domain(urlPH)
 
     finalPrediction = 0
 
-    similar = similarityRate(urlPH)
+    similar = similarityRate(url_domain)
 
-    banned = blackListCheck(urlPH)
+    banned = blackListCheck(url_domain)
 
     print(similar)
-    
-    if similar != "" or banned or prediction == 1:
+    if len(similar) > 0:
         finalPrediction = 1
 
     return finalPrediction
@@ -96,12 +103,12 @@ def complementaryPrediction(urlPH, prediction):
 def groupBlackListCheck(dfURL):
     blackList = pd.read_csv('./datasets/PhishTank-DataSet.csv')
     blackList = pd.DataFrame(blackList)
-    blackList = blackList.url
-    blackList["prediction"] = 1
+    blackList = blackList['url']
     banned = False
-
-    dfPred = dfURL.join(blackList, 'url', 'url')
+    blackList['prediction'] = 1  # Esto funciona si quieres asignar una columna "prediction" con valor 1.
+    dfPred = pd.merge(dfURL, blackList[['url', 'prediction']], on='url', how='left')
     dfPred.fillna(value=0, inplace=True)
+
 
     return dfPred
 

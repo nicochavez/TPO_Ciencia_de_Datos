@@ -23,8 +23,6 @@ def predict_LonelyURL():
             print("URL no válida")
             return jsonify([-1]), 400
 
-        data = request.get_json()
-        URL = data.get("url")  # Asegurarse de recibir la URL en el body de la petición POST
 
         # Crear un DataFrame a partir de la URL proporcionada
         urlDict = {'url': [URL]}
@@ -40,9 +38,10 @@ def predict_LonelyURL():
 
         # Hacer la predicción con el modelo cargado
         prediction = MLNB.predict(urlDF)
+        print(prediction)
 
         finalPrediction = complementaryPrediction(URL, prediction[0])
-
+        print(finalPrediction)
         # Devolver la predicción como respuesta JSON
         #return jsonify(prediction=int(prediction[0]))
         return jsonify(finalPrediction)

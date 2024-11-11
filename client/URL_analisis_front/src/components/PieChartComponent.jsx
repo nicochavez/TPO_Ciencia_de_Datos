@@ -8,14 +8,15 @@ import {
     ResponsiveContainer
 } from 'recharts';
 
-const PieChartComponent = ({ positive, negative }) => {
+const PieChartComponent = ({ blackList, characteristic, similarity }) => {
     const data = [
-        { name: 'Phishing', value: positive },
-        { name: 'Seguro', value: negative }
+        { name: 'BlackList', value: blackList },
+        { name: 'Characteristic', value: characteristic },
+        { name: 'Similarity', value: similarity }
     ];
 
     // Define colores para cada parte del gráfico
-    const COLORS = ['#F44336', '#4CAF50'];
+    const COLORS = ['#F44336', '#FF9800', '#4CAF50'];
 
     return (
         <ResponsiveContainer width="100%" height={300}>

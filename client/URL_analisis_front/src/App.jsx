@@ -7,8 +7,21 @@ function AnalizarURLs() {
   const [file, setFile] = useState(null);
   const [urlAnalysisResult, setUrlAnalysisResult] = useState(null);
   const [csvAnalysisResult, setCsvAnalysisResult] = useState(null);
+  const [total, setTotal] = useState({
+    blackList: 0,
+    characteristic: 0,
+    similarity: 0,
+    prediction: 0,
+    safe: 0
+  });
+
+
   const [message, setMessage] = useState('');
   // Función para manejar el análisis de una URL individual
+
+
+
+
   const analizarURL = async () => {
     try {
       const response = await fetch('http://127.0.0.1:5000/predict', {
@@ -41,6 +54,28 @@ function AnalizarURLs() {
   };
 
 
+  const getTotals = (data) => {
+    const totals = {
+      blackList: 0,
+      characteristic: 0,
+      similarity: 0,
+      prediction: 0,
+      safe: 0 // Añadir atributo para contar las predicciones que son 0
+    };
+  
+    data.forEach((element) => {
+      totals.blackList += element.blackList;
+      totals.characteristic += element.characteristic;
+      totals.similarity += element.similarity;
+      totals.prediction += element.prediction;
+      if (element.prediction === 0) {
+        totals.safe += 1;
+      }
+    });
+  
+    return totals;
+  };
+
   // Función para manejar el análisis de un archivo CSV
   const analizarCSV = async () => {
     if (!file) {
@@ -58,6 +93,7 @@ function AnalizarURLs() {
       });
       const data = await response.json();
       console.log(data)
+      setTotal(getTotals(data));
       setCsvAnalysisResult(data); // Guarda el resultado del análisis
     } catch (error) {
       console.error('Error al analizar el CSV:', error);
@@ -127,13 +163,17 @@ function AnalizarURLs() {
             className='block w-5/12 mx-auto p-2 bg-gray-900'
           />
           <button onClick={analizarCSV} className='block w-1/3 mx-auto p-2 bg-gray-700 rounded'>Analizar CSV</button>
-          {csvAnalysisResult && (
+          {total.prediction > 0 ? (
             <div className='mt-20 space-y-10'>
-              <strong>Tienes {csvAnalysisResult[0]} posibles URLs de phishing</strong>
+              <strong>Tienes posibles URLs de phishing</strong>
               <div className='flex'>
-                <PieChartComponent positive={csvAnalysisResult[0]} negative={csvAnalysisResult[1]} />
-                <BarChartComponent positive={csvAnalysisResult[0]} negative={csvAnalysisResult[1]} />
+                <PieChartComponent blackList={total.blackList} characteristic={total.characteristic} similarity={total.similarity} />
+                <BarChartComponent positive={total.prediction} middle={total.characteristic} negative={total.safe} />
               </div>
+            </div>
+          ): (
+            <div className='mt-20 space-y-10'>
+              <strong>No tienes URLs de phishing</strong>
             </div>
           )}
         </div>

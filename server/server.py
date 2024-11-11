@@ -44,6 +44,7 @@ def predict_GroupURL():
     file = request.files['file']
     
     try:
+        print("Here!")
         prediction = group_final_prediction(file)
 
         return jsonify(prediction)

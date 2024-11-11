@@ -21,30 +21,14 @@ def predict_LonelyURL():
 
         if not URL or not validators.url(URL):
             print("URL no válida")
-            return jsonify([-1]), 400
+            return jsonify(-1), 400
+        
 
 
-        # Crear un DataFrame a partir de la URL proporcionada
-        urlDict = {'url': [URL]}
-        urlDF = pd.DataFrame(urlDict)
-
-        # Calcular las características de la URL
-        urlDF = valueCalc(urlDF)
-
-        # Eliminar la columna 'url' para que solo queden las características que el modelo espera
-        urlDF = urlDF.drop(columns=['url'])
-
-        MLNB = get_MLNB()
-
-        # Hacer la predicción con el modelo cargado
-        prediction = MLNB.predict(urlDF)
-        print(prediction)
-
-        finalPrediction = complementaryPrediction(URL, prediction[0])
-        print(finalPrediction)
-        # Devolver la predicción como respuesta JSON
-        #return jsonify(prediction=int(prediction[0]))
-        return jsonify(finalPrediction)
+        if final_prediction(URL):
+            return jsonify(1)
+        
+        return jsonify(0)
     
     except Exception as e:
         return jsonify({"error": str(e)}), 500

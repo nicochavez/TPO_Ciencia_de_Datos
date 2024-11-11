@@ -1,8 +1,13 @@
 import pandas as pd
 import numpy as np
 from sklearn.naive_bayes import MultinomialNB
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report, accuracy_score
 import difflib
 import tldextract
+import Levenshtein
+
 
 def get_MLNB():
     data_set = pd.read_csv('./datasets/DataSet_WebPhishing_Final.csv')
@@ -13,18 +18,33 @@ def get_MLNB():
 
     #dfWebClassification = pd.DataFrame(data_set_classification)
 
-
     #Separo DataSet en Etiquetas y columna de Clases (0 good / 1 bad)
     feature_cols = ['url_length', 'n_dots', 'n_hypens', 'n_underline', 'n_slash', 'n_questionmark', 'n_equal', 'n_at', 'n_and', 'n_exclamation', 'n_space', 'n_tilde', 'n_comma', 'n_plus', 'n_asterisk', 'n_hastag', 'n_dollar', 'n_percent']
     X = dfWebPh[feature_cols] # Etiquetas
     y = dfWebPh.phishing # Clases
-
 
     MLNB = MultinomialNB()
 
     MLNB.fit(X, y)
 
     return MLNB
+
+def get_Similarity_Model():
+    df = pd.read_csv('../datasets/Similarity_websites.csv')
+
+    # Separar las características y la etiqueta
+    X = df[["Min_Levenshtein_Distance"]]  # Convertir a DataFrame
+    y = df["Phishing"]
+    
+    # Dividir los datos en conjuntos de entrenamiento y prueba
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+    # Crear y entrenar el modelo de Random Forest
+    ranForest = RandomForestClassifier(random_state=42)
+    ranForest.fit(X_train, y_train)
+    
+
+    return ranForest
     
 
 
@@ -50,28 +70,16 @@ def valueCalc(df):
     
     return df
 
+def calculate_levenstein_distance(url):
+    legit_domains = pd.read_csv('../datasets/top_websites.csv', delimiter=';')['Domain'].to_list()
+    print(legit_domains)
+    distances = [Levenshtein.distance(url, legit_domain) for legit_domain in legit_domains]
+    return min(distances)
 
-def similarityRate(urlPH):
 
-    topWEBData = pd.read_csv('./datasets/top_websites.csv', delimiter=';')
-
-
-    topWEBData = topWEBData['Domain']  # Asegúrate de que 'Domain' es el nombre correcto de la columna.
-    match = False
-    similarSite = ""
-    
-    for site in topWEBData:
-        if difflib.SequenceMatcher(None, site, urlPH).ratio() > 0.8 or difflib.SequenceMatcher(None, site, urlPH).ratio() < 0.9:
-            match = True
-            similarSite = site
-            break
-
-    
-    return similarSite
 
 def blackListCheck(urlPH):
     blackList = pd.read_csv('./datasets/PhishTank-DataSet.csv')
-    blackList = pd.DataFrame(blackList)
     blackList = blackList['url']
     banned = False
 
@@ -84,20 +92,47 @@ def get_domain(url):
     ext = tldextract.extract(url)
     return f"{ext.domain}.{ext.suffix}"
 
-def complementaryPrediction(urlPH, prediction):
-    url_domain = get_domain(urlPH)
+def prediction_by_characteristics(url):
+    urlDict = {'url': [url]}
+    urlDF = pd.DataFrame(urlDict)
 
-    finalPrediction = 0
+    urlDF = valueCalc(urlDF)
 
-    similar = similarityRate(url_domain)
+    urlDF = urlDF.drop(columns=['url'])
 
-    banned = blackListCheck(url_domain)
+    MLNB = get_MLNB()
 
-    print(similar)
-    if len(similar) > 0:
-        finalPrediction = 1
+    prediction = MLNB.predict(urlDF)
 
-    return finalPrediction
+    return prediction[0]
+
+def prediction_by_similarity(url):
+    url_domain = get_domain(url)
+    print(url_domain)
+    ranForest = get_Similarity_Model()
+    similarity = calculate_levenstein_distance(url_domain)
+    print(similarity)
+    prediction = ranForest.predict([[similarity]])
+
+    return prediction[0]
+
+
+def final_prediction(url):
+    #prediction_1 = prediction_by_characteristics(url)
+
+    #if blackListCheck:
+    #    return True
+
+    #if prediction_1 == 1:
+     #   return True
+    prediction_2 = prediction_by_similarity(url)
+
+    if prediction_2 == 1:
+        print("Phishing")
+        return True
+    
+    return False
+    
 
 
 def groupBlackListCheck(dfURL):

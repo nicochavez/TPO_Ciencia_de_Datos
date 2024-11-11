@@ -7,6 +7,8 @@ function AnalizarURLs() {
   const [file, setFile] = useState(null);
   const [urlAnalysisResult, setUrlAnalysisResult] = useState(null);
   const [csvAnalysisResult, setCsvAnalysisResult] = useState(null);
+  const [loading, setLoading] = useState(false); // Estado de carga
+  const [loading1, setLoading1] = useState(false); // Estado de carga
   const [total, setTotal] = useState({
     blackList: 0,
     characteristic: 0,
@@ -24,6 +26,7 @@ function AnalizarURLs() {
 
   const analizarURL = async () => {
     try {
+      setLoading(true); // Activa el estado de carga
       const response = await fetch('http://127.0.0.1:5000/predict', {
         method: "POST",
         headers: {
@@ -34,8 +37,10 @@ function AnalizarURLs() {
       const data = await response.json();
       console.log(data)
       setUrlAnalysisResult(data); // Guarda el resultado del análisis
+      setLoading(false); // Desactiva el estado de carga
     } catch (error) {
       console.error('Error al analizar la URL:', error);
+      setLoading(false); // Desactiva el estado de carga
     }
   };
 
@@ -87,6 +92,7 @@ function AnalizarURLs() {
     formData.append('file', file);
 
     try {
+      setLoading1(true); // Activa el estado de carga
       const response = await fetch('http://127.0.0.1:5000/predictgroup', {
         method: 'POST',
         body: formData,
@@ -95,8 +101,10 @@ function AnalizarURLs() {
       console.log(data)
       setTotal(getTotals(data));
       setCsvAnalysisResult(data); // Guarda el resultado del análisis
+      setLoading1(false); // Desactiva el estado de carga
     } catch (error) {
       console.error('Error al analizar el CSV:', error);
+      setLoading1(false); // Desactiva el estado de carga
     }
   };
 
@@ -115,6 +123,11 @@ function AnalizarURLs() {
             className='block w-1/2 mx-auto p-2 bg-gray-900'
           />
           <button onClick={analizarURL} className='block w-1/3 mx-auto p-2 bg-gray-700 rounded'>Analizar URL</button>
+          {loading && (
+            <div className="flex justify-center items-center mt-4">
+              <div className="animate-spin rounded-full h-10 w-10 border-4 border-gray-300 border-t-blue-500"></div>
+            </div>
+            )}
           {urlAnalysisResult && (
           <div className='flex justify-center'>
             {(() => {
@@ -163,6 +176,11 @@ function AnalizarURLs() {
             className='block w-5/12 mx-auto p-2 bg-gray-900'
           />
           <button onClick={analizarCSV} className='block w-1/3 mx-auto p-2 bg-gray-700 rounded'>Analizar CSV</button>
+          {loading1 && (
+            <div className="flex justify-center items-center mt-4">
+             <div className="animate-spin rounded-full h-10 w-10 border-4 border-gray-300 border-t-blue-500"></div>
+            </div>
+          )}
           {total.prediction > 0 ? (
             <div className='mt-20 space-y-10'>
               <strong>Tienes posibles URLs de phishing</strong>

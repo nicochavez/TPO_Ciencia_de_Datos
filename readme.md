@@ -1,5 +1,9 @@
 # TPO Ciencia de Datos🧪
 
+## Project Description
+
+In this project, we perform an exploratory data analysis to identify patterns in URLs and detect those that are potentially malicious or phishing. We use various data analysis and machine learning techniques to examine specific characteristics of URLs and determine their legitimacy. This analysis allows us to develop predictive models that can help prevent phishing attacks and improve online security.
+
 ## Installation Guide🔍
 
 Follow these steps to set up the project on your local machine.
@@ -61,13 +65,13 @@ npm install
 
 ### Step 3: Start the Development Server
 ```bash
-npm start
+npm run dev
 ```
 
 ### Step 4: Build for Production
 To create a production build, run:
 ```bash
-npm run bdev
+npm build
 ```
 
 ### Step 5: Test the Application

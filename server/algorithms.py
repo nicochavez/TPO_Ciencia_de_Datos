@@ -10,24 +10,20 @@ import Levenshtein
 
 
 def get_MLNB():
-    data_set = pd.read_csv('./datasets/DataSet_WebPhishing_Final.csv')
+    data_set = pd.read_csv('../datasets/DataSet_WebPhishing_Final.csv')
 
     dfWebPh = pd.DataFrame(data_set)
-
-    #data_set_classification = pd.read_csv('/content/drive/MyDrive/Ciencia de Datos TPO/DataSets/URL Classification.csv', names=['url', 'category'])
-
-    #dfWebClassification = pd.DataFrame(data_set_classification)
 
     #Separo DataSet en Etiquetas y columna de Clases (0 good / 1 bad)
     feature_cols = ['url_length', 'n_dots', 'n_hypens', 'n_underline', 'n_slash', 'n_questionmark', 'n_equal', 'n_at', 'n_and', 'n_exclamation', 'n_space', 'n_tilde', 'n_comma', 'n_plus', 'n_asterisk', 'n_hastag', 'n_dollar', 'n_percent']
     X = dfWebPh[feature_cols] # Etiquetas
     y = dfWebPh.phishing # Clases
 
-    MLNB = MultinomialNB()
+    mlnb = MultinomialNB()
 
-    MLNB.fit(X, y)
+    mlnb.fit(X, y)
 
-    return MLNB
+    return mlnb
 
 def get_Similarity_Model():
     df = pd.read_csv('../datasets/Similarity_websites.csv')
@@ -45,8 +41,6 @@ def get_Similarity_Model():
     
 
     return ranForest
-    
-
 
 def valueCalc(df):
     df['url_length'] = df['url'].str.len()
@@ -72,14 +66,11 @@ def valueCalc(df):
 
 def calculate_levenstein_distance(url):
     legit_domains = pd.read_csv('../datasets/top_websites.csv', delimiter=';')['Domain'].to_list()
-    print(legit_domains)
     distances = [Levenshtein.distance(url, legit_domain) for legit_domain in legit_domains]
     return min(distances)
 
-
-
 def blackListCheck(urlPH):
-    blackList = pd.read_csv('./datasets/PhishTank-DataSet.csv')
+    blackList = pd.read_csv('../datasets/PhishTank-DataSet.csv')
     blackList = blackList['url']
     banned = False
 
@@ -100,53 +91,130 @@ def prediction_by_characteristics(url):
 
     urlDF = urlDF.drop(columns=['url'])
 
-    MLNB = get_MLNB()
+    mlnb = get_MLNB()
 
-    prediction = MLNB.predict(urlDF)
+    prediction = mlnb.predict(urlDF)
 
-    return prediction[0]
+    return prediction
+
+def prediction_group_by_characteristics(df):
+    urlDF = valueCalc(df)
+
+    urlDF = urlDF.drop(columns=['url'])
+    print(urlDF.head())
+
+    mlnb = get_MLNB()
+
+    prediction = mlnb.predict(urlDF)
+
+    print(prediction)
+
+    return prediction
 
 def prediction_by_similarity(url):
     url_domain = get_domain(url)
     print(url_domain)
     ranForest = get_Similarity_Model()
     similarity = calculate_levenstein_distance(url_domain)
-    print(similarity)
     prediction = ranForest.predict([[similarity]])
 
-    return prediction[0]
+    return prediction
+
+def prediction_group_by_similarity(df):
+    df_prediction = df[['url']]
+    # Extraer los dominios limpios de las URLs
+    df_prediction['domain'] = df_prediction['url'].apply(get_domain)
+    
+    # Calcular la distancia de Levenshtein para cada dominio
+    df_prediction['similarity'] = df_prediction['domain'].apply(calculate_levenstein_distance)
+    print(df_prediction.head())
+    
+    # Obtener el modelo de Random Forest
+    ranForest = get_Similarity_Model()
+    similarity_list = df_prediction['similarity'].values.reshape(-1, 1)
+    prediction = ranForest.predict(similarity_list)
+    print(prediction)
+
+    return prediction
 
 
 def final_prediction(url):
-    #prediction_1 = prediction_by_characteristics(url)
 
-    #if blackListCheck:
-    #    return True
+    result = []
+    print("URL: ", url)
+    if blackListCheck(url):
+        print("Blacklist phishing")
+        result.append(1)
+        result.append("Blacklist phishing")
+        return result
 
-    #if prediction_1 == 1:
-     #   return True
+    prediction_1 = prediction_by_characteristics(url)
+    if prediction_1[0] == 1:
+        print("Characteristics phishing")
+        result.append(1)
+        result.append("Characteristics phishing")
+        return result
+    
     prediction_2 = prediction_by_similarity(url)
+    if prediction_2[0] == 1:
+        print("Similarity phishing")
+        result.append(1)
+        result.append("Similarity phishing")
+        return result
+    
+    return result
+    
 
-    if prediction_2 == 1:
-        print("Phishing")
-        return True
+def group_final_prediction(file):
+    # Leer el archivo CSV en un DataFrame
+    csvDF = pd.read_csv(file)
+
+    # Extraer la columna de URLs (suponiendo que la columna se llama 'url')
+    df_urlPredict = csvDF[['url']]
+ 
     
-    return False
-    
+    # Calcular las características de las URLs
+    df_urlPredict = valueCalc(df_urlPredict)
+
+    finalDF = csvDF[['url']]
+    finalDF['blackList'] = groupBlackListCheck(csvDF[['url']])
+    finalDF['characteristic'] = prediction_group_by_characteristics(csvDF[['url']])
+    print(finalDF.head())
+    finalDF['similarity'] = prediction_group_by_similarity(csvDF[['url']])
+
+
+
+
+
+    # finalDF = csvDF[['url']]
+    # finalDF['prediction'] = prediction
+    # finalDF['finalPrediction'] = complementaryPrediction(finalDF['url'], finalDF['prediction'])       
+
+    # # Contar las predicciones y crear el resultado
+    # prediction_counts = pd.Series(finalDF['finalPrediction']).value_counts().to_dict()
+
 
 
 def groupBlackListCheck(dfURL):
-    blackList = pd.read_csv('./datasets/PhishTank-DataSet.csv')
-    blackList = pd.DataFrame(blackList)
-    blackList = blackList['url']
-    banned = False
-    blackList['prediction'] = 1  # Esto funciona si quieres asignar una columna "prediction" con valor 1.
-    dfPred = pd.merge(dfURL, blackList[['url', 'prediction']], on='url', how='left')
-    dfPred.fillna(value=0, inplace=True)
+    # Leer la blacklist
+    blackList = pd.read_csv('../datasets/PhishTank-DataSet.csv')
+    blackList_urls = blackList['url']
+
+    # Verificar si las URLs están en la blacklist
+    dfURL['in_blacklist'] = dfURL['url'].isin(blackList_urls).astype(int)
+
+    # Devolver la lista de 0 y 1
+    return dfURL['in_blacklist']
+    
+
+
+
+    #blackList['prediction'] = 1  # Esto funciona si quieres asignar una columna "prediction" con valor 1.
+    #dfPred = pd.merge(dfURL, blackList[['url', 'prediction']], on='url', how='left')
+    #dfPred.fillna(value=0, inplace=True)
 
 
     return dfPred
-
 
     
 

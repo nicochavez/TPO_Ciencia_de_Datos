@@ -82,14 +82,20 @@ function AnalizarURLs() {
           {urlAnalysisResult && (
           <div className='flex justify-center'>
             {(() => {
-              if (urlAnalysisResult === 1) {
+              if (urlAnalysisResult[0] === 1) {
                 return (
-                  <div className='flex'>
-                    <p className='font-bold'>Resultado del análisis:</p>
-                    <p className='bg-red-600'>Posible URL de phishing</p>
+                  <div className='flex flex-col items-center'>
+                    <div className='flex'>
+                      <p className='font-bold'>Resultado del análisis:</p>
+                      <p className='bg-red-600 ml-1'>Posible URL de phishing</p>
+                    </div>
+                    <div className='flex'>
+                      <p className='font-bold'>Motivo:</p>
+                      <p className='ml-1'>{urlAnalysisResult[1]}</p>
+                    </div>
                   </div>
                 );
-              } else if (urlAnalysisResult === -1) {
+              } else if (urlAnalysisResult[0] === -1) {
                 return (
                   <div className='flex'>
                     <p className='font-bold'>Resultado del análisis:</p>
@@ -100,7 +106,7 @@ function AnalizarURLs() {
                 return (
                   <div className='flex'>
                     <p className='font-bold'>Resultado del análisis:</p>
-                    <p className='bg-green-600'>URL segura</p>
+                    <p className='bg-green-600 ml-1'>URL segura</p>
                   </div>
                 );
               }

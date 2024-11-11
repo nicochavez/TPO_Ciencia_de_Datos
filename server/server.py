@@ -21,14 +21,14 @@ def predict_LonelyURL():
 
         if not URL or not validators.url(URL):
             print("URL no válida")
-            return jsonify(-1), 400
-        
+            return jsonify([-1]), 400
 
-
-        if final_prediction(URL):
-            return jsonify(1)
+        prediction = final_prediction(URL)
+        print(prediction)
+        if len(prediction) == 0:
+            return jsonify([0, "Legitim"])
         
-        return jsonify(0)
+        return jsonify(prediction)
     
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -44,31 +44,9 @@ def predict_GroupURL():
     file = request.files['file']
     
     try:
-        # Leer el archivo CSV en un DataFrame
-        csvDF = pd.read_csv(file)
+        prediction = group_final_prediction(file)
 
-        # Extraer la columna de URLs (suponiendo que la columna se llama 'url')
-        df_urlPredict = csvDF[['url']]
-        
-        # Calcular las características de las URLs
-        df_urlPredict = valueCalc(df_urlPredict)
-        
-        # Eliminar la columna 'url' antes de la predicción
-        df_urlPredict.drop('url', axis=1, inplace=True)
-
-        MLNB = get_MLNB()
-
-        # Realizar la predicción
-        prediction = MLNB.predict(df_urlPredict)
-
-        finalDF = csvDF[['url']]
-        finalDF['prediction'] = prediction
-        finalDF['finalPrediction'] = complementaryPrediction(finalDF['url'], finalDF['prediction'])       
-
-        # Contar las predicciones y crear el resultado
-        prediction_counts = pd.Series(finalDF['finalPrediction']).value_counts().to_dict()
-
-        return jsonify(prediction_counts)
+        return jsonify(prediction)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
